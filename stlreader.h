@@ -74,6 +74,7 @@ stl_obj * stl_from_file(const char * path) {
 //will write an stl_obj to a file named `path`. if that file already exists,
 //it will override it.
 bool stl_to_file(stl_obj * obj, const char * path) {
+    
     assert(sizeof(stl_tri) == 50);
 
     //header is 80 bytes, tri_count is 4, and each tri is 50 bytes.
@@ -85,4 +86,19 @@ bool stl_to_file(stl_obj * obj, const char * path) {
     memcpy(bytes + 84, obj->tris, obj->tri_count * sizeof(stl_tri));
 
     return writeBytes(path, bytes, filesize);
+}
+
+stl_obj * stl_copy(stl_obj * obj) {
+
+    stl_obj * copy = calloc(1, sizeof(stl_obj));
+
+    //make a shallow copy. 
+    memcpy(copy, obj, sizeof(stl_obj));
+
+    //have copy->tris point to a new allocation, then copy the tris
+    //into it.
+    copy->tris = calloc(copy->tri_count, sizeof(stl_tri));
+    memcpy(copy->tris, obj->tris, obj->tri_count * sizeof(stl_tri));
+
+    return copy;
 }

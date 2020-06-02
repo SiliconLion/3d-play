@@ -76,7 +76,8 @@ int main()
     // return 0;
 
     stl_obj * obj = stl_from_file("assets/Mushu.stl");
-    stl_to_file(obj, "output/Mushu.stl");
+    stl_obj * copy = stl_copy(obj);
+    stl_to_file(copy, "output/Mushu.stl");
 }
 
 
