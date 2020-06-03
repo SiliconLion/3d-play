@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <math.h>
 #include "utilities.h"
 
 typedef float stl_normal[3];
@@ -101,4 +102,51 @@ stl_obj * stl_copy(stl_obj * obj) {
     memcpy(copy->tris, obj->tris, obj->tri_count * sizeof(stl_tri));
 
     return copy;
+}
+
+//takes an stl_obj, and normalizes it so that the largest coordinate is equal to 
+//max, and all other coords are scaled proportionately.
+//also makes all normals unit normals
+void stl_normalize(stl_obj * obj, float max) {
+    unsigned long tri_count = obj->tri_count;
+    stl_tri * tris = obj->tris; 
+
+    //just set the max_coord to an initial value
+    float max_coord = tris[0].verts[0][0];
+    
+    //find the largest coord in all the coordinates
+    for(long i = 0; i < tri_count; i++) {
+        //the above needs to be a long because the possible number of tris.
+        //the below is long just for consistency
+        for(long j = 0; j < 3; j++) {
+            for(long k = 0; k < 3; k++) {
+                if (tris[i].verts[j][k] > max_coord) {
+                    max_coord = tris[i].verts[j][k];
+                }
+            }
+        }
+    }
+
+    float scale = max / max_coord;
+
+    for(long i = 0; i < tri_count; i++) {
+        //normalize the verticies in the tri
+        for(long j = 0; j < 3; j++) {
+            for(long k = 0; k < 3; k++) {
+                tris[i].verts[j][k] *= scale;
+            }
+        }
+
+        //normalize the normal of the tri
+
+        float norm_scale = sqrt( 
+            powf(tris[i].norm[0], 2) +
+            powf(tris[i].norm[1], 2) +
+            powf(tris[i].norm[2], 2)
+        );
+
+        tris[i].norm[0] *= norm_scale;
+        tris[i].norm[1] *= norm_scale;
+        tris[i].norm[2] *= norm_scale;
+    }
 }

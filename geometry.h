@@ -97,7 +97,7 @@ Geometry * geom_from_stl(const char * path) {
     if(obj == NULL) {return NULL;}
 
     for(int i = 0; i < obj->tri_count; i++) {
-        stl_tri_print(obj->tris + i);
+        // stl_tri_print(obj->tris + i);
     }
 
 
