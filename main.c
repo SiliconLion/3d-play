@@ -25,59 +25,73 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-
-    // glfwInit();
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    // //needed for mac
-    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     
-    // GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
-    // if (window == NULL)
-    // {
-    //     printf("Failed to create GLFW window\n");
-    //     glfwTerminate();
-    //     return -1;
-    // }
-    // glfwMakeContextCurrent(window);
-    // glViewport(0, 0, 800, 600);
+    const char*  model_path;
+    if (argc == 2) {
+        model_path = argv[1];
+    } else {
+        model_path = "assets/mushu.stl";
+    }
 
-    // //adds the callback we defined above to a change in framebuffer size
-    // glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //needed for mac
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    
+    GLFWwindow* window = glfwCreateWindow(800, 600, "3D Play :D", NULL, NULL);
+    if (window == NULL)
+    {
+        printf("Failed to create GLFW window\n");
+        glfwTerminate();
+        return -1;
+    }
+    glViewport(0, 0, 800, 600);
+    glfwMakeContextCurrent(window);
+
+    //adds the callback we defined above to a change in framebuffer size
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
-    // Geometry * geom = geom_from_stl("assets/fox.stl");
+    Geometry * geom = geom_from_stl(model_path);
 
-    // printf("geometry created\n");
+    printf("geometry created\n");
 
-    // Shader * shad = shad_new("shaders/vertex.vert", "shaders/fragment.frag");
 
-    // printf("shader created\n");
+    Shader * shad = shad_new("shaders/vertex.vert", "shaders/fragment.frag");
 
-    // shad_bind(shad);
-    // while(!glfwWindowShouldClose(window)) {
+    printf("shader created\n");
 
-    //     processInput(window);
+    printf("verticies count: %i\n", geom->verticies_count);
 
-    //     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    //     glClear(GL_COLOR_BUFFER_BIT);
+    unsigned int angleY_loc = glGetUniformLocation(shad->program, "angleY");
+    
+    float angle = 0;
+    shad_bind(shad);
+    while(!glfwWindowShouldClose(window)) {
 
-    //     geom_draw(geom);
+        processInput(window);
 
-    //     glfwSwapBuffers(window);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+
+        angle += 0.01;
+        glUniform1f(angleY_loc, angle);
+
+        geom_draw(geom);
+
+        glfwSwapBuffers(window);
         
-    //     glfwPollEvents();
-    // }
+        glfwPollEvents();
+    }
 
-    // glfwTerminate();
-    // return 0;
+    glfwTerminate();
+    return 0;
 
-    stl_obj * obj = stl_from_file("assets/Mushu.stl");
-    stl_normalize(obj, 1.0);
-    stl_to_file(obj, "output/Mushu.stl");
+
 }
 
 

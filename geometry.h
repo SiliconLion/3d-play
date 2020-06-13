@@ -54,7 +54,7 @@ Geometry * geom_new(GLenum usage) {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, (void*) 0);
     glEnableVertexAttribArray(0);
     //sets up the normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, (void*)3);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_SIZE, (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
     //unbinds so we dont interfere with other state
@@ -96,9 +96,7 @@ Geometry * geom_from_stl(const char * path) {
     stl_obj * obj = stl_from_file(path);
     if(obj == NULL) {return NULL;}
 
-    for(int i = 0; i < obj->tri_count; i++) {
-        // stl_tri_print(obj->tris + i);
-    }
+    stl_normalize(obj, 1.0);
 
 
     //3 verticies per triangle.
@@ -110,17 +108,17 @@ Geometry * geom_from_stl(const char * path) {
         for (int j = 0; j < 3; j++) {
 
             //copy the j'th vertex in the i'th triangle to curpos
-            memcpy(curpos, obj->tris[i].verts + j, sizeof(float) * 3);
+            memcpy(curpos, obj->tris[i].verts[j], sizeof(float) * 3);
             curpos += 3;
 
-            memcpy(curpos, &(obj->tris[i].norm), sizeof(float) * 3);
+            memcpy(curpos, obj->tris[i].norm, sizeof(float) * 3);
             curpos += 3;
         }
     }
 
     Geometry * geom = geom_new(GL_STATIC_DRAW);
 
-    geom_replace_verticies(geom, vert_data, obj->tri_count * 3 * VERTEX_SIZE);
+    geom_replace_verticies(geom, vert_data, obj->tri_count * 3);
 
     free(vert_data);
 
@@ -128,6 +126,7 @@ Geometry * geom_from_stl(const char * path) {
 }
 
 void geom_draw(Geometry * geom) {
+    glEnable(GL_DEPTH_TEST);  
     geom_bind(geom);
 
     glDrawArrays(GL_TRIANGLES, 0, geom->verticies_count);

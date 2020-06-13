@@ -104,6 +104,10 @@ stl_obj * stl_copy(stl_obj * obj) {
     return copy;
 }
 
+
+//To Do: make it account for negative coordinates as well. Though those are 
+//disallowed in the spec, they seem to be common. 
+
 //takes an stl_obj, and normalizes it so that the largest coordinate is equal to 
 //max, and all other coords are scaled proportionately.
 //also makes all normals unit normals
