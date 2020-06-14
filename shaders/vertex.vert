@@ -3,7 +3,10 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNorm;
 
-uniform float angleY;
+uniform float x_rotation;
+uniform float y_rotation;
+uniform float x_offset;
+uniform float y_offset;
 
 out vec3 norm;
 
@@ -11,16 +14,15 @@ out vec3 norm;
 
 void main()
 {
-    float angleX = 3.1415 / 2.0; //pi/2 radians == 90 degrees
     mat4 transformX = mat4(	1.0,		0,			0,			0,
-                        0, 	cos(angleX),	-sin(angleX),		0,
-                        0, 	sin(angleX),	 cos(angleX),		0,
+                        0, 	cos(x_rotation),	-sin(x_rotation),		0,
+                        0, 	sin(x_rotation),	 cos(x_rotation),		0,
                         0, 			0,			  0, 		1);
 
 
-    mat4 transformY = mat4(	cos(angleY),		0,	  sin(angleY),	   0,
+    mat4 transformY = mat4(	cos(y_rotation),		0,	  sin(y_rotation),	   0,
                                     0,	    1.0,  		 0,	       0,
-                            -sin(angleY),	0,	  cos(angleY),	   0,
+                            -sin(y_rotation),	0,	  cos(y_rotation),	   0,
                                     0, 		0,	  		 0,	       1);
 
     norm = (transformX * vec4(aNorm, 1.0)).xyz;
@@ -29,5 +31,5 @@ void main()
     norm = (transformY * vec4(norm, 1.0)).xyz;
     pos = (transformY * vec4(pos, 1.0)).xyz;
 
-    gl_Position =  vec4(pos.x - 0.5, pos.y - 0.5, pos.z, 1.0);
+    gl_Position =  vec4(pos.x + x_offset, pos.y + y_offset, pos.z, 1.0);
 }

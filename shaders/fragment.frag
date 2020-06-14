@@ -13,6 +13,8 @@ void main()
     vec3 lighting = 1.5 * vec3(-0.3, 0.3, -0.2);
 
     float shadow = dot(lighting, norm);
-    FragColor = vec4(shadow, shadow, shadow, 1.0);
+    vec3 green = vec3(0.5, 0.8, 0.6);
+    vec3 shaded_green = shadow * green;
+    FragColor = vec4(shaded_green, 1.0);
     // FragColor = vec4(norm, 1.0);
 }
