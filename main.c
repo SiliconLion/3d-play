@@ -11,6 +11,7 @@
 #include "stlreader.h"
 #include "geometry.h"
 #include "shader.h"
+#include "texture.h"
 
 
 
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
     if (argc == 2) {
         model_path = argv[1];
     } else {
-        model_path = "assets/mushu.stl";
+        model_path = "assets/models/baby-yoda.stl";
     }
 
     glfwInit();
@@ -100,12 +101,9 @@ int main(int argc, char *argv[])
 
     Geometry * geom = geom_from_stl(model_path);
 
-    printf("geometry created\n");
-
-
     Shader * shad = shad_new("shaders/vertex.vert", "shaders/fragment.frag");
 
-    printf("shader created\n");
+    Texture * texture = tex_new("assets/matcap/clay_brown.png", true);
 
     printf("verticies count: %i\n", geom->verticies_count);
 
@@ -115,6 +113,9 @@ int main(int argc, char *argv[])
     unsigned int y_offset_loc   = glGetUniformLocation(shad->program, "y_offset");
     unsigned int x_rotation_loc = glGetUniformLocation(shad->program, "x_rotation");
     unsigned int y_rotation_loc = glGetUniformLocation(shad->program, "y_rotation");
+
+    unsigned int matcap_loc     = glGetUniformLocation(shad->program, "matcap");
+    glUniform1i(matcap_loc, 0);
 
     shad_bind(shad);
     while(!glfwWindowShouldClose(window)) {
@@ -129,6 +130,8 @@ int main(int argc, char *argv[])
         glUniform1f(y_offset_loc  , globalstate.y_offset  );
         glUniform1f(x_rotation_loc, globalstate.x_rotation);
         glUniform1f(y_rotation_loc, globalstate.y_rotation);
+
+        tex_bind(texture, 0);
 
         geom_draw(geom);
 

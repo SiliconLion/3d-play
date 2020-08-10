@@ -8,6 +8,7 @@ uniform float y_rotation;
 uniform float x_offset;
 uniform float y_offset;
 
+out vec3 pos;
 out vec3 norm;
 
 
@@ -26,7 +27,7 @@ void main()
                                     0, 		0,	  		 0,	       1);
 
     norm = (transformX * vec4(aNorm, 1.0)).xyz;
-    vec3 pos = (transformX * vec4(aPos, 1.0)).xyz;
+    pos = (transformX * vec4(aPos, 1.0)).xyz;
 
     norm = (transformY * vec4(norm, 1.0)).xyz;
     pos = (transformY * vec4(pos, 1.0)).xyz;
