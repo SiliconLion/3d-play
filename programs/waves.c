@@ -51,23 +51,33 @@ int main(int argc, char *argv[]) {
 
     Geometry * surface = prim_new_plane(1.5, 1.5, 100, 100, GL_STATIC_DRAW);
 
+
     Shader * shad = shad_new("shaders/waves/vertex.vert", "shaders/waves/fragment.frag");
 
+    unsigned int time_loc = glGetUniformLocation(shad->program, "time");
+
+
     shad_bind(shad);
+
+    float counter = 0.0;
     while(!glfwWindowShouldClose(window)) {
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0, 0.0, 0.0, 1.0);
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
     //makes it wireframe (for debug purposes)
         // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE); 
         // glFrontFace(GL_CW);
 
+        glUniform1f(time_loc, counter);
 
         geom_draw(surface);
 
         glfwSwapBuffers(window);
         
         glfwPollEvents();
+
+        counter += 0.01;
     }
 
     glfwTerminate();
