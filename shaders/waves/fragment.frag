@@ -11,9 +11,10 @@ void main() {
     // float shade = dot(lightdirection, norm);
 
     float shade = 
-        (sin(  6* (pos.x + pos.y + time) ) ) +
-        0.4 * (cos(14.0 * ( 0.2 * pos.x + pos.y + time * 1.3 ) ) ) + 
-        (sin(  3 * (pos.x +  0.3 *pos.y + time) ) )
+        sin(time) +
+        sin(  3 * (pos.x +  0.3 *pos.y + time) ) +
+        sin(  6* (pos.x + pos.y + time) ) +
+        0.4 * sin(14.0 * ( 0.2 * pos.x + pos.y + time * 1.3 ) )
     ;
     vec3 color =  vec3(0.1 * shade, 0.3 * shade, 0.7 * shade);
     FragColor = vec4(color.x, color.y, color.z, 1.0);

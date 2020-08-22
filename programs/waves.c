@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
 
 
-    Geometry * surface = prim_new_plane(1.5, 1.5, 100, 100, GL_STATIC_DRAW);
+    Geometry * surface = prim_new_plane(2, 2, 1, 1, GL_STATIC_DRAW);
 
 
     Shader * shad = shad_new("shaders/waves/vertex.vert", "shaders/waves/fragment.frag");
