@@ -2,13 +2,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 //path is a null terminated string of the file path
 //sets length to be length of the file in bytes. Pass in NULL to ignore this 
 char * readFile(const char* path, int* length) {
     FILE * file = fopen(path, "r");
     if (!file) {
-        printf("Unable to open file %s", path);
+        char * curdirectory = calloc(2000, sizeof(char));
+        getcwd(curdirectory, 2000);
+        printf("Unable to open file \"%s\" from current directory \"%s\"\n", path, curdirectory);
         length = NULL;
         return NULL;
     }
@@ -28,6 +31,8 @@ char * readFile(const char* path, int* length) {
     return outString;
 }
 
+// shaders/waves/darkwater.frag
+// shaders/waves/darkwater.frag
 
 //takes a path and returns a pointer to its contents. 
 //sets *count to be the number of bytes pointed to. Pass in NULL to ignore this.
@@ -37,7 +42,9 @@ int8_t * readBytes(const char* path, int* count) {
     }
     FILE * file = fopen(path, "rb");
     if (!file) {
-        printf("Unable to open file %s\n", path);
+        char * curdirectory = calloc(2000, sizeof(char));
+        getcwd(curdirectory, 2000);
+        printf("Unable to open file \"%s\" from current directory \"%s\"\n", path, curdirectory);
         count = NULL;
         return NULL;
     }
@@ -65,7 +72,9 @@ bool writeBytes(const char* path, int8_t * bytes, int count) {
     }
     FILE * file = fopen(path, "wb+");
     if (!file) {
-        printf("Unable to open file %s", path);
+        char * curdirectory = calloc(2000, sizeof(char));
+        getcwd(curdirectory, 2000);
+        printf("Unable to open file \"%s\" from current directory \"%s\"\n", path, curdirectory);
         return false;
     }
 

@@ -2,13 +2,14 @@
 in vec3 norm;
 in vec3 pos;
 
-uniform float time;
+uniform float aTime;
 
 out vec4 FragColor;
 
 void main() { 
 
     float scale = 1.0;
+    float time = aTime;
 
     // vec3 lightdirection = vec3(0.04, 0.6, 0.3);
     // float shade = dot(lightdirection, norm);

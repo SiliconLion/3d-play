@@ -25,6 +25,31 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 
 int main(int argc, char *argv[]) {
 
+    const char * fragmentfile; 
+
+    if (argc > 1) {
+        fragmentfile = argv[1];
+        //important to check the user input. printf is vunerable 
+        if (strcmp(fragmentfile, "brightwater.frag") == 0 ||
+            strcmp(fragmentfile, "darkwater.frag") == 0 ||
+            strcmp(fragmentfile, "tangent.frag") == 0 ) {
+                //things are good. do nothing. 
+        } else {
+            printf("input is not a valid shader;");
+            return -1; 
+        }
+    } else {
+        fragmentfile = "darkwater.frag";
+    }
+
+    printf("%s", fragmentfile);
+
+//just putting together the location of the fragment shader file. 
+    char * fragFileLoc = calloc(500, sizeof(char));
+    strcat(fragFileLoc, "shaders/waves/");
+    strcat(fragFileLoc, fragmentfile);
+    
+    printf("%s\n", fragFileLoc);
 
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -52,9 +77,9 @@ int main(int argc, char *argv[]) {
     Geometry * surface = prim_new_plane(2, 2, 1, 1, GL_STATIC_DRAW);
 
 
-    Shader * shad = shad_new("shaders/waves/vertex.vert", "shaders/waves/fragment.frag");
+    Shader * shad = shad_new("shaders/waves/vertex.vert", fragFileLoc);
 
-    unsigned int time_loc = glGetUniformLocation(shad->program, "time");
+    unsigned int time_loc = glGetUniformLocation(shad->program, "aTime");
 
 
     shad_bind(shad);
