@@ -4,20 +4,48 @@
 #include <stdbool.h>
 #include "utilities.h"
 
+//We could of course make a more dynamic array and avoid code 
+//duplication, or do some extremely hacky preprocessor tricks to 
+//try and force const generics, but since bot 3x3 and 4x4 arrays are
+//so common, this seems like the best answer, and comes with many 
+//bennifits like being totally stack allocated. 
+
 //3x3 array
 typedef struct {
     //the elements of the matrix stored as a flat array. 
     float elements[9];
 } mat_3x3; 
 
+//3x3 array
+typedef struct {
+    //the elements of the matrix stored as a flat array. 
+    float elements[16];
+} mat_4x4; 
+
 // #define MAT_3X3_ZERO (mat_3x3) {.elements = \
 //                     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}
 
 const mat_3x3 MAT_3X3_ZERO = {.elements = 
-                    {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
+                    {0.0, 0.0, 0.0, 
+                     0.0, 0.0, 0.0, 
+                     0.0, 0.0, 0.0}};
 
 const mat_3x3 MAT_3X3_IDENT = {.elements = 
-                    {1.0, 0.0, 0.0,   0.0, 1.0, 0.0,   0.0, 0.0, 1.0}};
+                    {1.0, 0.0, 0.0,
+                     0.0, 1.0, 0.0,
+                     0.0, 0.0, 1.0}};
+
+const mat_4x4 MAT_4x4_ZERO = {.elements = 
+                    {0.0, 0.0, 0.0, 0.0,
+                     0.0, 0.0, 0.0, 0.0, 
+                     0.0, 0.0, 0.0, 0.0,
+                     0.0, 0.0, 0.0, 0.0}};
+            
+const mat_4x4 MAT_4X4_IDENT = {.elements = 
+                    {1.0, 0.0, 0.0, 0.0,
+                     0.0, 1.0, 0.0, 0.0,
+                     0.0, 0.0, 1.0, 0.0,
+                     0.0, 0.0, 0.0, 1.0 }};
 
 //returns whether the matricies are equal or not
 bool mat_3x3_equal(mat_3x3 lhs, mat_3x3 rhs) {
@@ -45,7 +73,7 @@ float mat_3x3_get( mat_3x3 matrix, int row, int col) {
 
 
 void mat_3x3_get_row(float dest[3], mat_3x3 matrix, int row) {
-    memcpy(dest, matrix.elements + row * 3, sizeof(float) * 3);
+    memcpy(dest, matrix.elements + (row * 3), sizeof(float) * 3);
 }
 
 void mat_3x3_get_col(float dest[3], mat_3x3 matrix, int col) {
@@ -71,6 +99,18 @@ mat_3x3 mat_3x3_add(mat_3x3 lhs, mat_3x3 rhs) {
     return matrix;
 }
 
+mat_3x3 mat_3x3_negate(mat_3x3 input) {
+    mat_3x3 matrix = input; 
+    for(int i = 0; i < 9; i++) {
+        matrix.elements[i] = -1.0 * matrix.elements[i];
+    }
+    return matrix;
+}
+
+mat_3x3 mat_3x3_sub(mat_3x3 lhs, mat_3x3 rhs) {
+    return mat_3x3_add(lhs, mat_3x3_negate(rhs));
+}
+
 //multiplty two 3x3 matricies. 
 mat_3x3 mat_3x3_mult(mat_3x3 lhs, mat_3x3 rhs) {
 
@@ -93,3 +133,107 @@ mat_3x3 mat_3x3_mult(mat_3x3 lhs, mat_3x3 rhs) {
     }
     return matrix;
 }
+
+
+//The functions for a 4x4 matrix
+
+
+
+bool mat_4x4_equal(mat_4x4 lhs, mat_4x4 rhs) {
+    int cmp = memcmp(lhs.elements, rhs.elements, sizeof(float) * 16);
+    if (cmp == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+//does not take ownership of elements. copies it instead
+mat_4x4 mat_4x4_new(float elements[16]) {
+    mat_4x4 matrix;
+    //we dont have to allocate elements first because its stack allocated already
+    memcpy(matrix.elements, elements, sizeof(float) * 16);
+    return matrix;
+}
+
+
+//gets the value of an element of a 4x4 matrix
+float mat_4x4_get( mat_4x4 matrix, int row, int col) {
+    return matrix.elements[util_flatten_index(row, col, 4)];
+}
+
+
+void mat_4x4_get_row(float dest[4], mat_4x4 matrix, int row) {
+    memcpy(dest, matrix.elements + (row * 4), sizeof(float) * 4);
+}
+
+void mat_4x4_get_col(float dest[4], mat_4x4 matrix, int col) {
+    dest[0] = matrix.elements[col];
+    dest[1] = matrix.elements[col + 4];
+    dest[2] = matrix.elements[col + 8];
+    dest[3] = matrix.elements[col + 12];
+}
+
+void mat_4x4_set(mat_4x4 * matrix, float value, int row, int col) {
+    unsigned int i = util_flatten_index(row, col, 4);
+    matrix->elements[i] = value;
+}
+
+mat_4x4 mat_4x4_add(mat_4x4 lhs, mat_4x4 rhs) {
+    mat_4x4 matrix = MAT_4x4_ZERO;
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            float lhs_element = mat_4x4_get(lhs, row, col);
+            float rhs_element = mat_4x4_get(rhs, row, col);
+            mat_4x4_set(&matrix, lhs_element + rhs_element, row, col);
+        }
+    }
+    return matrix;
+}
+
+mat_4x4 mat_4x4_negate(mat_4x4 input) {
+    mat_4x4 matrix = input; 
+    for(int i = 0; i < 16; i++) {
+        matrix.elements[i] = -1.0 * matrix.elements[i];
+    }
+    return matrix;
+}
+
+// mat_3x3 mat_3x3_negate(mat_3x3 input) {
+//     mat_3x3 matrix = input; 
+//     for(int i = 0; i < 9; i++) {
+//         matrix.elements[i] = -1.0 * matrix.elements[i];
+//     }
+//     return matrix;
+// }
+
+mat_4x4 mat_4x4_sub(mat_4x4 lhs, mat_4x4 rhs) {
+    return mat_4x4_add(lhs, mat_4x4_negate(rhs));
+}
+
+//multiplty two 4x4 matricies. 
+mat_4x4 mat_4x4_mult(mat_4x4 lhs, mat_4x4 rhs) {
+
+    mat_4x4 matrix = MAT_4x4_ZERO;
+
+    for (int row = 0; row < 4; row++) {
+        for (int col = 0; col < 4; col++) {
+            float lhsrow[4], rhscol[4];
+            mat_4x4_get_row(lhsrow, lhs, row);
+            mat_4x4_get_col(rhscol, rhs, col);
+
+
+            float element = 0;
+            for ( int i = 0; i < 4; i++) {
+                element += lhsrow[i] * rhscol[i];
+            }
+
+            mat_4x4_set(&matrix, element, row, col);
+        }
+    }
+    return matrix;
+}
+
+// mat_4x4_print(mat_4x4 matrix) {
+    
+// }
