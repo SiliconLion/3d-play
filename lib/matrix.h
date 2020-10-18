@@ -16,14 +16,12 @@ typedef struct {
     float elements[9];
 } mat_3x3; 
 
-//3x3 array
+//4x4 array
 typedef struct {
     //the elements of the matrix stored as a flat array. 
     float elements[16];
 } mat_4x4; 
 
-// #define MAT_3X3_ZERO (mat_3x3) {.elements = \
-//                     {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}}
 
 const mat_3x3 MAT_3X3_ZERO = {.elements = 
                     {0.0, 0.0, 0.0, 

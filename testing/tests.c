@@ -1,6 +1,10 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <sys/wait.h>
+#include <assert.h>
 #include "matrix.h"
+#include "utilities.h"
+#include "dynarr.h"
 
 #define RESET   "\033[0m"
 #define GREEN   "\033[32m" 
@@ -471,9 +475,237 @@ void test_mat_4x4() {
     test_mat_4x4_mult();
 }
 
+bool test_dynarr_new() {
+    //a dyn array with capacity of 32 ints
+    dynarr control = {
+        .data = calloc(32, sizeof(int)),
+        .stride = sizeof(int),
+        .len = 0,
+        .capacity = 32
+    };
+
+    dynarr test = dynarr_new(sizeof(int), 32);
+
+    bool correct = true;
+    correct &= (control.stride == test.stride);
+    correct &= (control.len == test.len);
+    correct &= (control.capacity == test.capacity);
+
+    //this is kinda hacky, but we know that dynarr uses calloc
+    //for new(), so we can kinda check that at least the right amount of memory 
+    //is zeroed out. There may be other reasons why it is zeroed out, so doing this
+    //doesn't prove it was allocated correctly, but we can sometimes check if it
+    //was allocated incorrectly
+
+    for(int i = 0; i < 32 * sizeof(int); i++) {
+        correct &= *( (char*)test.data) == 0;
+    }
+
+    TESTISTRUE(correct);
+}
+
+bool test_dynarr_expand() {
+    dynarr test_plain = dynarr_new(sizeof(int), 16);
+    dynarr test_no_capacity = dynarr_new(sizeof(int), 0);
+
+//should double the capacity (16 -> 32)
+    dynarr_expand(&test_plain);
+//should grow the capacity to 8 (0 ->8)
+    dynarr_expand(&test_no_capacity);
+
+    bool control = true;
+    control &= test_plain.capacity == 32;
+    //length should be unchanged (0)
+    control &= test_plain.len == 0;
+
+    control &= test_no_capacity.capacity == 8;
+    //length should be unchanged (0)
+    control &= test_no_capacity.len == 0;
+
+    TESTISTRUE(control);
+
+}
+
+bool test_dyn_array_check_index() {
+    dynarr vector = dynarr_new(sizeof(int), 16);
+    //we do it this way because we haven't tested dynarr_push yet. 
+    vector.len = 16; 
+
+    for(int i = 0; i < 16; i++) {
+        //if nothing happens, its succesful
+        dynarr_check_index(&vector, i);
+    }
+
+
+//we do this to check that exit is called when we want it called.
+    pid_t process = fork();
+    assert(process >= 0); //if <0 failed to make a process. 
+    if(process == 0) { //in the child process. we can catch a call to exit.
+        // Suppress the assert output
+        fclose(stderr); 
+        dynarr_check_index(&vector, 16);
+    } else {
+        int childstatus;
+        wait(&childstatus);
+        if (WEXITSTATUS(childstatus) == 1) {
+            TESTSUCCESS;
+        } else {
+            TESTFAILED;
+        }
+    }
+
+
+}
+
+bool test_dynarr_push() {
+    dynarr arr = dynarr_new(sizeof(int), 8);
+
+    for(int i = 0; i < 10; i++) {
+        dynarr_push(&arr, &i);
+    }
+
+    if (arr.len != 10) {TESTFAILED;}
+    if (arr.capacity != 16) {TESTFAILED;}
+
+    for(int i = 0; i < 10; i++) {
+        int value = ( (int*)(arr.data) )[i]; 
+        if(value != i) {
+            TESTFAILED;
+        }
+    }
+
+    TESTSUCCESS;
+}
+
+bool test_dynarr_pop() {
+
+    dynarr arr = dynarr_new(sizeof(int), 8);
+    for(int i = 0; i < 10; i++) {
+        dynarr_push(&arr, &i);
+    }
+
+    bool correct = true;
+    for(int i = 9; i >= 0; i--) {
+        correct &= arr.len == i + 1;
+        correct &= i == *(int *)dynarr_pop(&arr);
+    }
+
+//checking exit is called when we want.
+    pid_t process = fork(); 
+    assert(process >= 0);
+    if (process == 0) {//in child process
+        fclose(stderr);
+        //calling pop on empty arr will cause it to exit with 1. 
+        dynarr_pop(&arr);
+    } else {
+        int child_status;
+        wait(&child_status);
+        correct &= WEXITSTATUS(child_status) == 1;
+    }
+
+    TESTISTRUE(correct);
+}
+
+bool test_dynarr_get() {
+    dynarr arr = dynarr_new(sizeof(int), 8);
+    for(int i = 0; i < 10; i++) {
+        dynarr_push(&arr, &i);
+    }
+
+    bool correct = true; 
+    for(int i = 0; i < 10; i++) {
+        correct &= i == *(int*)dynarr_get(&arr, i);
+    }
+
+    //checks that exit(1) is called on incorrect get call. 
+    pid_t process = fork();
+    assert(process >= 0);
+    if(process == 0) { //in child process
+        fclose(stderr);
+        //10 is an index out of bounds.
+        dynarr_get(&arr, 10);
+    } else {
+        int child_status;
+        wait(&child_status);
+        correct &= WEXITSTATUS(child_status) == 1;
+    }
+
+    TESTISTRUE(correct);
+}
+
+bool test_dynarr_set() {
+    dynarr arr = dynarr_new(sizeof(int), 8);
+    const int zero = 0;
+    for(int i = 0; i < 10; i++) {
+        dynarr_push(&arr, &zero);
+    }
+
+    for(int i = 0; i < 10; i++) {
+        dynarr_set(&arr, i, &i);
+    }
+
+    bool correct = true; 
+    for(int i = 0; i < 10; i++) {
+        correct &= i == *(int*)dynarr_get(&arr, i);
+    }
+
+    //check that setting out of bounds calls exit(1)
+    pid_t process = fork();
+    assert(process >= 0);
+    if(process == 0) { //child process
+        fclose(stderr);
+        int n = 6;
+        dynarr_set(&arr, 10, &n);
+    } else {
+        int child_status;
+        wait(&child_status);
+        correct &= WEXITSTATUS(child_status) == 1;
+    }
+
+    TESTISTRUE(correct);
+
+}
+
+//we use this for testing dynarr_foreach
+void double_element(void * element) {
+    int * numptr = (int*)element;
+    *numptr *= 2;
+}
+
+bool test_dynarr_foreach() {
+    dynarr arr = dynarr_new(sizeof(int), 8);
+    for(int i = 0; i < 10; i++) {
+        dynarr_push(&arr, &i);
+    }
+
+    dynarr_foreach(&arr, double_element);
+
+    bool correct = true;
+    for(int i = 0; i < 10; i++) {
+        correct &= i * 2 == *(int*)dynarr_get(&arr, i);
+    }
+
+    TESTISTRUE(correct);
+}
+
+
+
+void test_dyn_array() {
+    test_dynarr_new();
+    test_dynarr_expand();
+    test_dyn_array_check_index();
+    test_dynarr_push();
+    test_dynarr_pop();
+    test_dynarr_get();
+    test_dynarr_set();
+    test_dynarr_foreach();
+}
+
+
 int main(int argc, char* argv[]) {
     test_mat_3x3();
     test_mat_4x4();
+    test_dyn_array();
     return 0;
 }
 
