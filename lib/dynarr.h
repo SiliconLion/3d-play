@@ -118,3 +118,7 @@ void dynarr_foreach(dynarr * self, void operation (void * element) ) {
     }
     return;
 }
+
+void dynarr_free(dynarr * self) {
+    free(self->data);
+}
