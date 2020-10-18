@@ -60,6 +60,11 @@ tran_chain tran_chain_new() {
     };
 }
 
+//adds the transformation to the chain
+void tran_chain_add(tran_chain * self, transform trans) {
+    dynarr_push(&(self->transforms), (void*)&trans);
+}
+
 //takes all the transformations and multiplies them into one transformation
 //multiplied from first to last.
 //An empty tran_chain will return the the identity transformation
