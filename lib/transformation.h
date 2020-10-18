@@ -34,15 +34,18 @@ transform trans_new_y_rot(float theta) {
     mat_4x4_set(&rot, -1.0f * sinf(theta), 2, 0);
     mat_4x4_set(&rot,         cosf(theta), 2, 2);
     
+    return rot;
 }
 
 //rotation around the z axis by theta (in radians)
-transform trans_new_y_rot(float theta) {
+transform trans_new_z_rot(float theta) {
     transform rot = MAT_4X4_IDENT;
     mat_4x4_set(&rot,         cosf(theta), 0, 0);
     mat_4x4_set(&rot, -1.0f * sinf(theta), 0, 1);
     mat_4x4_set(&rot,         sinf(theta), 1, 0);
     mat_4x4_set(&rot,         cosf(theta), 1, 1);
+
+    return rot;
 }
 
 
