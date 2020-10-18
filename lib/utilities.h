@@ -84,6 +84,6 @@ bool writeBytes(const char* path, int8_t * bytes, int count) {
 
 //takes coordinates in a 2D grid, and outputs what the index in a 1D array would be. 
 //width is the width of the grid. 
-unsigned int util_flatten_index(int row, int col, int width) {
+inline unsigned int util_flatten_index(int row, int col, int width) {
     return row * width + col;
 }
