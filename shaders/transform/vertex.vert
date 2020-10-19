@@ -8,6 +8,6 @@ uniform mat4x4 transformation;
 out vec3 norm;
 
 void main() {
-    norm = aNorm;
+    norm = (transformation * vec4(aNorm, 1.0)).xyz;
     gl_Position = transformation * vec4(aPos, 1.0);
 }

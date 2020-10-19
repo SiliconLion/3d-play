@@ -7,13 +7,26 @@
 //we will be representing transformations with 4x4 matrices
 typedef mat_4x4 transform; 
 
+//Warning, can mess up normals. If the normals are reciving the result of the
+//transformation, pass the translation along seperately. 
 transform trans_new_translation(float x, float y, float z) {
-    transform trans = MAT_4x4_ZERO;
+    transform trans = MAT_4X4_IDENT;
     mat_4x4_set(&trans, x, 0, 3);
     mat_4x4_set(&trans, y, 1, 3);
     mat_4x4_set(&trans, z, 2, 3);
-    mat_4x4_set(&trans, 1.0f, 3, 3);
+
     return trans;
+}
+
+//scales it in each respective axis by x,y and z.
+//Warning, can mess up normals. If the normals are reciving the result of the
+//transformation, pass the scale along seperately. 
+transform trans_new_scale(float x, float y, float z) {
+    transform scale = MAT_4X4_IDENT;
+    mat_4x4_set(&scale, x, 0, 0);
+    mat_4x4_set(&scale, y, 1, 1);
+    mat_4x4_set(&scale, z, 2, 2);
+    return scale;
 }
 
 //rotation around the x axis by theta (in radians)
@@ -30,7 +43,7 @@ transform trans_new_x_rot(float theta) {
 transform trans_new_y_rot(float theta) {
     transform rot = MAT_4X4_IDENT;
     mat_4x4_set(&rot,         cosf(theta), 0, 0);
-    mat_4x4_set(&rot,         sinf(theta), 0, 3);
+    mat_4x4_set(&rot,         sinf(theta), 0, 2);
     mat_4x4_set(&rot, -1.0f * sinf(theta), 2, 0);
     mat_4x4_set(&rot,         cosf(theta), 2, 2);
     
@@ -46,6 +59,18 @@ transform trans_new_z_rot(float theta) {
     mat_4x4_set(&rot,         cosf(theta), 1, 1);
 
     return rot;
+}
+
+//sends the transformation as a uniform using glUniformMatrix4fv
+//obviously needs all the correct context setup and everything
+void trans_send_uniform(GLint location, transform trans) {
+    glUniformMatrix4fv(
+                location,
+                1,
+                //because it is in row major order, we set transpose to true.
+                GL_TRUE,
+                &(trans.elements)
+        );
 }
 
 

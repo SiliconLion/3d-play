@@ -132,9 +132,18 @@ mat_3x3 mat_3x3_mult(mat_3x3 lhs, mat_3x3 rhs) {
     return matrix;
 }
 
+void mat_3x3_print(mat_3x3 mat) {
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            printf("%f, ", *(mat.elements + (i * 3) + j) );
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 
 //The functions for a 4x4 matrix
-
 
 
 bool mat_4x4_equal(mat_4x4 lhs, mat_4x4 rhs) {
@@ -232,6 +241,12 @@ mat_4x4 mat_4x4_mult(mat_4x4 lhs, mat_4x4 rhs) {
     return matrix;
 }
 
-// mat_4x4_print(mat_4x4 matrix) {
-    
-// }
+void mat_4x4_print(mat_4x4 mat) {
+    for(int i = 0; i < 4; i++) {
+        for(int j = 0; j < 4; j++) {
+            printf("%f, ", *(mat.elements + (i * 4) + j) );
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
