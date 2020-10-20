@@ -4,6 +4,10 @@
 #include "matrix.h"
 #include "dynarr.h"
 
+#ifdef __APPLE__
+    #include <OpenGL/gl3.h>
+    #include <GLFW/glfw3.h>
+#endif
 //we will be representing transformations with 4x4 matrices
 typedef mat_4x4 transform; 
 

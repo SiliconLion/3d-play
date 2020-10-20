@@ -2,7 +2,6 @@
 
 #ifdef __APPLE__
     #include <OpenGL/gl3.h>
-    // #include <OpenGL/gl3ext.h>
     #include <GLFW/glfw3.h>
 #endif
 
@@ -14,46 +13,36 @@
 #include "texture.h"
 #include "transformation.h"
 
-
+//global so callbacks can see them
 int windowWidth_global, windowHeight_global;
 
-
-void error_callback(int error, const char* description)
-{
+//on a GLFW error, will print the error
+void error_callback(int error, const char* description) {
     fprintf(stderr, "Error: %s\n", description);
 }
 
 //updates the glViewport when the window is resized.
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
     windowWidth_global = width;
     windowHeight_global = height;
 }
 
+//closes the application when escape key is pressed
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (key == GLFW_KEY_SPACE && action == GLFW_PRESS) {
-        int mode = glfwGetInputMode(window, GLFW_CURSOR);
-        if (mode == GLFW_CURSOR_DISABLED) {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        } else {
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        }
-
-    } else if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
-    }
-        
+    }    
 }
  
 
 int main() {
 
+    //Just plain GLFW window setup and opengl context creation. 
     if(!glfwInit()) {
         return 2; 
     }
-
     glfwSetErrorCallback(error_callback);
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -66,80 +55,101 @@ int main() {
     if(!window) {
         return 2;
     }
-
     glfwMakeContextCurrent(window);
 
-    
     glfwGetFramebufferSize(window, &windowWidth_global, &windowHeight_global);
     glViewport(0, 0, windowWidth_global, windowHeight_global);
 
+
+    //adding callbacks for 
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-    //to exit when escape is pressed.
     glfwSetKeyCallback(window, key_callback);
     
     //to avoid screen tearing. 
     glfwSwapInterval(1);
 
-    //for better camera movement.
-    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    Geometry * geom1 = geom_from_stl("assets/models/meshed_sphere.stl");
-    Geometry * geom2 = geom_from_stl("assets/models/meshed_cube.stl");
-
-
+    //load the geometry, the shaders, and the texture
+    Geometry * ball = geom_from_stl("assets/models/meshed_sphere.stl");
+    Geometry * cube = geom_from_stl("assets/models/meshed_cube.stl");
     Shader * shad = shad_new("shaders/transform/vertex.vert", "shaders/transform/fragment.frag");
-
     Texture * texture = tex_new("assets/matcap/clay_brown.png", true);
 
-
+    //location of the transformation uniform
     unsigned int transform_loc = glGetUniformLocation(shad->program, "transformation");
 
+    //bind the shader program
     shad_bind(shad);
 
+    //will be used for rotation based on mouse movement. See more in render loop
     float xrot = 0;
     float yrot = 0;
+    //the components of the previous mouse position. 
+    //starting at the center so everything will be rotated relative to the center of 
+    //the window. 
+    float  prev_xpos = windowHeight_global / 2;
+    float  prev_ypos = windowWidth_global / 2; 
 
-    float  prev_xpos = 0;
-    float  prev_ypos = 0; 
+    //the render loop
     while (!glfwWindowShouldClose(window)) {
 
+        //just clears the screen for rendering
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
-
-        double curr_xpos, curr_ypos;
-        glfwGetCursorPos(window, &curr_xpos, &curr_ypos);
-
-    //a movement along the x axis corisponds to a rotation around the y axis and visaversa. 
-        yrot += -1.0f * (curr_xpos - prev_xpos) / (windowWidth_global / 2);
-        xrot += -1.0f * (curr_ypos - prev_ypos) / (windowHeight_global / 2);
-
-        prev_xpos = curr_xpos;
-        prev_ypos = curr_ypos;
-
-        // printf("xrot: %f, yrot: %f\n", xrot, yrot);
-
+        //the transformation chain used to collect all the transformations
         tran_chain chain = tran_chain_new();
-        tran_chain_add(&chain, trans_new_y_rot(yrot) );
-        tran_chain_add(&chain, trans_new_x_rot(xrot) );
+
+        //maintains a square aspect ratio when window isn't square
+        //not sure it's 100% sound but works pretty well
+        tran_chain_add(&chain, trans_new_scale(
+                (float)windowHeight_global/(float)windowWidth_global,
+                1.0f,
+                1.0f
+            ) 
+        );
+        //just adjusts the scale of the geometry to be half the size
         tran_chain_add(&chain, trans_new_scale(0.5, 0.5, 0.5));
+
+
+        //here we're using the mouse movement to generate a rotation for the geometry
+        //(the block is purely aesthetic to visually seperate this calculation from the rest 
+        //of the render code)
+        {
+            //stores the current cursor position
+            double curr_xpos, curr_ypos;
+            glfwGetCursorPos(window, &curr_xpos, &curr_ypos);
+
+            //This is basically the mouse movement delta, but normalized so it fits 
+            //the openGL coordinates better. 
+            //A movement along the x axis corresponds to a rotation around the y axis and visaversa. 
+            yrot += -1.0f * (curr_xpos - prev_xpos) / (windowWidth_global / 2);
+            xrot += -1.0f * (curr_ypos - prev_ypos) / (windowHeight_global / 2);
+
+            //
+            prev_xpos = curr_xpos;
+            prev_ypos = curr_ypos;
+
+            //add the x and y rotations to the chain
+            tran_chain_add(&chain, trans_new_y_rot(yrot) );
+            tran_chain_add(&chain, trans_new_x_rot(xrot) );
+        }
+
+        //combine all the transformations into one and send to gpu. 
         transform trans = tran_chain_squash(&chain);
         trans_send_uniform(transform_loc, trans);
        
-
+        //bind the texture and draw the geometry
         tex_bind(texture, 0);
+        geom_draw(ball);
+        geom_draw(cube);
 
-        geom_draw(geom1);
-        geom_draw(geom2);
-
+        //present the render to the window and poll events
         glfwSwapBuffers(window);
-        
         glfwPollEvents();
-
-
     }      
 
-
+    //standard cleanup code
     glfwDestroyWindow(window);
     glfwTerminate();
 }
