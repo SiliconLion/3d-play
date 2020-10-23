@@ -78,7 +78,7 @@ int main() {
 
     //location of the transformation uniform
     unsigned int transform_loc = glGetUniformLocation(shad->program, "transformation");
-
+    unsigned int scale_loc = glGetUniformLocation(shad->program, "scale");
 
 
 
@@ -91,8 +91,10 @@ int main() {
     float  prev_xpos = windowHeight_global / 2;
     float  prev_ypos = windowWidth_global / 2; 
 
+    //the transformation chain used to keep track of the scale
+    tran_chain scale = tran_chain_new();
     //the transformation chain used to collect all the transformations
-    tran_chain chain = tran_chain_new();
+    tran_chain trans = tran_chain_new();
 
     //bind the shader program
     shad_bind(shad);
@@ -110,14 +112,14 @@ int main() {
 
         //maintains a square aspect ratio when window isn't square
         //not sure it's 100% sound but works pretty well
-        tran_chain_add(&chain, trans_new_scale(
+        tran_chain_add(&scale, trans_new_scale(
                 (float)windowHeight_global/(float)windowWidth_global,
                 1.0f,
                 1.0f
             ) 
         );
         //just adjusts the scale of the geometry to be half the size
-        tran_chain_add(&chain, trans_new_scale(0.5, 0.5, 0.5));
+        tran_chain_add(&scale, trans_new_scale(0.5, 0.5, 0.5));
 
 
         //here we're using the mouse movement to generate a rotation for the geometry
@@ -139,21 +141,22 @@ int main() {
             prev_ypos = curr_ypos;
 
             //add the x and y rotations to the chain
-            tran_chain_add(&chain, trans_new_y_rot(yrot) );
-            tran_chain_add(&chain, trans_new_x_rot(xrot) );
+            tran_chain_add(&trans, trans_new_y_rot(yrot) );
+            tran_chain_add(&trans, trans_new_x_rot(xrot) );
         }
 
         //combine all the transformations into one and send to gpu. 
-        transform trans = tran_chain_squash(&chain);
-        trans_send_uniform(transform_loc, trans);
+        trans_send_uniform(transform_loc, tran_chain_squash(&trans));
+        trans_send_uniform(scale_loc, tran_chain_squash(&scale));
        
         //bind the texture and draw the geometry
         tex_bind(ball_texture, 0);
         geom_draw(ball);
         tex_bind(cube_texture, 0);
-        geom_draw_wireframe(cube, 1.0);
+        geom_draw_wireframe(cube, 0.8);
 
-        tran_chain_clear(&chain);
+        tran_chain_clear(&trans);
+        tran_chain_clear(&scale);
 
         //present the render to the window and poll events
         glfwSwapBuffers(window);
@@ -163,7 +166,8 @@ int main() {
     }      
 
     //standard cleanup code
-    tran_chain_delete(&chain);
+    tran_chain_delete(&trans);
+    tran_chain_delete(&scale);
 
     geom_delete(cube);
     geom_delete(ball);

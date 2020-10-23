@@ -7,6 +7,6 @@ uniform sampler2D matcap;
 out vec4 FragColor;
 
 void main() {
-    vec2 matcapPos = vec2( (norm.x / 1.0) + 0.5, (norm.y / 1.0) + 0.5);
+    vec2 matcapPos = vec2( (norm.x / 2.0) + 0.5, (norm.y / 2.0) + 0.5);
     FragColor = texture(matcap, matcapPos);
 }
