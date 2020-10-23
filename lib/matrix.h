@@ -8,7 +8,7 @@
 //duplication, or do some extremely hacky preprocessor tricks to 
 //try and force const generics, but since bot 3x3 and 4x4 arrays are
 //so common, this seems like the best answer, and comes with many 
-//bennifits like being totally stack allocated. 
+//bennifits like being totally stack allocated, so no delete function needed
 
 //3x3 array
 typedef struct {

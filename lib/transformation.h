@@ -111,6 +111,10 @@ transform tran_chain_squash(tran_chain * self) {
     return product;
 }
 
-void tran_chain_free(tran_chain * self) {
-    dynarr_free( &(self->transforms) );
+void tran_chain_clear(tran_chain * chain) {
+    dynarr_clear(&(chain->transforms));
+} 
+
+void tran_chain_delete(tran_chain * self) {
+    dynarr_delete( &(self->transforms) );
 }

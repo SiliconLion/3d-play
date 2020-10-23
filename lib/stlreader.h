@@ -47,7 +47,6 @@ typedef struct {
 
 
 
-
 stl_obj * stl_from_file(const char * path) {
     
     int8_t * bytes = readBytes(path, NULL);
@@ -153,4 +152,9 @@ void stl_normalize(stl_obj * obj, float max) {
         tris[i].norm[1] *= norm_scale;
         tris[i].norm[2] *= norm_scale;
     }
+}
+
+
+void stl_obj_delete(stl_obj * obj) {
+    free(obj->tris);
 }

@@ -23,6 +23,7 @@ typedef struct {
 } Texture;
 
 
+
 //slot is the number of the texture slot to bind the texture to. 
 //For instance, slot = 0 would be GL_TEXTURE0, and slot = 3 would be GL_TEXTURE3
 void tex_bind(Texture * texture, int slot) {
@@ -80,5 +81,8 @@ Texture * tex_new(const char * path, bool alpha) {
     return texture;
 }
 
-
+void tex_delete(Texture * texture) {
+    tex_unbind();
+    glDeleteTextures(1, &(texture->id));
+}
 

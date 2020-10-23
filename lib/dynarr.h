@@ -16,6 +16,7 @@ typedef struct {
     size_t capacity;
 } dynarr;
 
+
 //stride is the size of the element to be stored in bytes
 //capacity is the number of elements to allocate for
 dynarr dynarr_new(size_t stride, size_t capacity) {
@@ -119,6 +120,12 @@ void dynarr_foreach(dynarr * self, void operation (void * element) ) {
     return;
 }
 
-void dynarr_free(dynarr * self) {
+//clears the data and resets the length to 0.
+void dynarr_clear(dynarr * arr) {
+    memset(arr->data, 0, arr->stride * arr->len);
+    arr->len = 0; 
+}
+
+void dynarr_delete(dynarr * self) {
     free(self->data);
 }

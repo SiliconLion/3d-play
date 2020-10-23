@@ -26,6 +26,7 @@ typedef struct {
 
 } Geometry;
 
+
 //usage denotes the hint to be given for how the vertex buffer object will
 //be used. should be one of GL_STREAM_DRAW, GL_STREAM_READ, 
 //GL_STREAM_COPY, GL_STATIC_DRAW, GL_STATIC_READ, GL_STATIC_COPY, 
@@ -92,7 +93,8 @@ void geom_replace_verticies(Geometry* geom, float * data, int vertex_count) {
 }
 
 
-
+//creates a Geometry from an stl file. 
+//Path is the path to the stl file
 Geometry * geom_from_stl(const char * path) {
     stl_obj * obj = stl_from_file(path);
     if(obj == NULL) {return NULL;}
@@ -132,4 +134,27 @@ void geom_draw(Geometry * geom) {
     glDrawArrays(GL_TRIANGLES, 0, geom->verticies_count);
 
     geom_unbind();
+}
+
+void geom_draw_wireframe(Geometry * geom, float line_width) {
+    glEnable(GL_DEPTH_TEST); 
+
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glLineWidth(line_width);
+    glEnable(GL_LINE_SMOOTH);
+
+    geom_bind(geom);
+    glDrawArrays(GL_TRIANGLES, 0, geom->verticies_count);
+
+    geom_unbind();
+    //probably dont need to do this, but I prefer to unbind things
+    glDisable(GL_LINE_SMOOTH);
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+}
+
+void geom_delete(Geometry * geom) {
+    geom_unbind();
+    free(geom->verticies);
+    glDeleteBuffers(1, &(geom->VBO));
+    glDeleteVertexArrays(1, &(geom->VAO));
 }

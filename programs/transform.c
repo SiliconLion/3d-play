@@ -73,13 +73,14 @@ int main() {
     Geometry * ball = geom_from_stl("assets/models/meshed_sphere.stl");
     Geometry * cube = geom_from_stl("assets/models/meshed_cube.stl");
     Shader * shad = shad_new("shaders/transform/vertex.vert", "shaders/transform/fragment.frag");
-    Texture * texture = tex_new("assets/matcap/clay_brown.png", true);
+    Texture * cube_texture = tex_new("assets/matcap/normalsmatcap.png", true);
+    Texture * ball_texture = tex_new("assets/matcap/clay_brown.png", true);
 
     //location of the transformation uniform
     unsigned int transform_loc = glGetUniformLocation(shad->program, "transformation");
 
-    //bind the shader program
-    shad_bind(shad);
+
+
 
     //will be used for rotation based on mouse movement. See more in render loop
     float xrot = 0;
@@ -90,15 +91,22 @@ int main() {
     float  prev_xpos = windowHeight_global / 2;
     float  prev_ypos = windowWidth_global / 2; 
 
+    //the transformation chain used to collect all the transformations
+    tran_chain chain = tran_chain_new();
+
+    //bind the shader program
+    shad_bind(shad);
+
+
     //the render loop
     while (!glfwWindowShouldClose(window)) {
 
         //just clears the screen for rendering
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
-        //the transformation chain used to collect all the transformations
-        tran_chain chain = tran_chain_new();
+        
 
         //maintains a square aspect ratio when window isn't square
         //not sure it's 100% sound but works pretty well
@@ -140,16 +148,29 @@ int main() {
         trans_send_uniform(transform_loc, trans);
        
         //bind the texture and draw the geometry
-        tex_bind(texture, 0);
+        tex_bind(ball_texture, 0);
         geom_draw(ball);
-        geom_draw(cube);
+        tex_bind(cube_texture, 0);
+        geom_draw_wireframe(cube, 1.0);
+
+        tran_chain_clear(&chain);
 
         //present the render to the window and poll events
         glfwSwapBuffers(window);
         glfwPollEvents();
+
+        
     }      
 
     //standard cleanup code
+    tran_chain_delete(&chain);
+
+    geom_delete(cube);
+    geom_delete(ball);
+    shad_delete(shad);
+    tex_delete(ball_texture);
+    tex_delete(cube_texture);
+
     glfwDestroyWindow(window);
     glfwTerminate();
 }

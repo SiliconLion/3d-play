@@ -79,6 +79,7 @@ bool writeBytes(const char* path, int8_t * bytes, int count) {
     }
 
     fwrite(bytes, 1, count, file);
+    fclose(file);
     return true;
 }
 

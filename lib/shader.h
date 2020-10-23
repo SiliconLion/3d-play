@@ -63,3 +63,8 @@ void shad_bind(Shader * shader) {
 void shad_unbind() {
     glUseProgram(0);
 }
+
+void shad_delete(Shader * shad) {
+    shad_unbind();
+    glDeleteShader(shad->program);
+}
