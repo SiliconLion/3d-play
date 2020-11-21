@@ -32,7 +32,8 @@ int main(int argc, char *argv[]) {
         //important to check the user input. printf is vunerable 
         if (strcmp(fragmentfile, "brightwater.frag") == 0 ||
             strcmp(fragmentfile, "darkwater.frag") == 0 ||
-            strcmp(fragmentfile, "tangent.frag") == 0 ) {
+            strcmp(fragmentfile, "tangent.frag") == 0  ||
+            strcmp(fragmentfile, "mandelbrot.frag") ==0) {
                 //things are good. do nothing. 
         } else {
             printf("input is not a valid shader;");
@@ -79,8 +80,10 @@ int main(int argc, char *argv[]) {
 
     Shader * shad = shad_new("shaders/waves/vertex.vert", fragFileLoc);
 
-    unsigned int time_loc = glGetUniformLocation(shad->program, "aTime");
+    
 
+    unsigned int time_loc = glGetUniformLocation(shad->program, "aTime");
+    unsigned int dim_loc = glGetUniformLocation(shad->program, "aDimensions");
 
     shad_bind(shad);
 
@@ -95,6 +98,11 @@ int main(int argc, char *argv[]) {
         // glFrontFace(GL_CW);
 
         glUniform1f(time_loc, counter);
+
+        GLint viewportDimensions[4];
+        glGetIntegerv( GL_VIEWPORT, viewportDimensions );
+        glUniform2f(dim_loc, viewportDimensions[2], viewportDimensions[3]);
+
 
         geom_draw(surface);
 
