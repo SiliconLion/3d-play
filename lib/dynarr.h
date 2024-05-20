@@ -85,8 +85,9 @@ void * dynarr_pop(dynarr * self) {
     return element;
 }
 
+//returns pointer to copy of element at index
 //bounds checked
-//frustratingly allocates
+//frustratingly allocates + copies.
 void * dynarr_get(dynarr * self, size_t index) {
     dynarr_check_index(self, index);
 

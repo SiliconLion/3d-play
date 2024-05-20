@@ -7,6 +7,9 @@
 
 
 
+
+//TODO: Move this into a new file. It's not really a "primitive" is it?
+
 //Returns a Geometry that is a flat triangular mesh with dimensions width, height. 
 //the mesh is divided into rectangles 
 //with w_resolution number of rectangles across the width, and 
