@@ -7,24 +7,181 @@
 
 #include <stdlib.h>
 #include "stlreader.h"
+#include "dynarr.h" //switch to CAVE_Vec when possible
+#include "vertices.h"
 
-//each vertex consists of 6 floats. The first 3 for position, then next 3 for normal
-const int VERTEX_SIZE = 6 * sizeof(float); 
+
 
 typedef struct {
-    unsigned int VAO;
-    unsigned int VBO;
-    // unsigned int EBO;
-    
-    //the number of verticies `verticies` can hold
-    int verticies_capacity;
-    int verticies_count;
-    float * verticies;
+    VERTEX_BLUEPRINT * vert_blueprint;
+    int vertex_stride; //number of bytes one vertex takes up.
+
+    unsigned int VAO; //vertex array object
+    unsigned int VBO; //vertex buffer object
+    unsigned int EBO; //element buffer object (indices basically)
+
+    dynarr vertices;
+    dynarr indices;
+
+    //what type of primitive is created by the vertices + indices. Eg,
+    //GL_TRIANGLES, GL_TRIANGLE_FAN, GL_LINE_STRIP, etc
+    GLenum primitive_type;
+
     //what mode the vertex buffer associated with VBO is. 
     //eg, GL_STATIC_DRAW, GL_DYNAMIC_DRAW
     GLenum usage;
 
+} FullGeometry;
+//ToDo: Once everything is switched over to this, rename to just `Geometry`.
+
+
+
+
+
+
+
+
+
+
+
+//note that vertices and indices are passed by value. The resulting geometry will own
+//both vertices and indices. Note that they can be empty and updated later with a call
+//to geom_replace_vertices
+void full_geom_new(
+        FullGeometry* g, VERTEX_BLUEPRINT vertex_blueprint,
+        dynarr vertices, dynarr indices,
+        GLenum primitive_type, GLenum usage
+) {
+
+}
+
+void full_geom_bind(FullGeometry * geom) {
+    glBindVertexArray(geom->VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, geom->VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, geom->EBO);
+}
+
+void full_geom_unbind() {
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+//Data is the new array of floats for verticies, and vertex_count is the number
+//of verticies it contains.
+//Does not take ownership of `data`.
+void geom_replace_verticies(Geometry* geom, float * data, int vertex_count) {
+    geom_bind(geom);
+
+    //copy data into geom->verticies
+    geom->verticies = realloc(geom->verticies, vertex_count * VERTEX_SIZE);
+    memcpy(geom->verticies, data, vertex_count * VERTEX_SIZE);
+
+    glBufferData(GL_ARRAY_BUFFER, vertex_count * VERTEX_SIZE, geom->verticies, geom->usage);
+
+    geom->verticies_count = vertex_count;
+
+    geom_unbind();
+}
+
+
+//creates a Geometry from an stl file.
+//Path is the path to the stl file
+full_geom_from_stl(FullGeometry * g, const char * path) {
+    stl_obj * obj = stl_from_file(path);
+    if(obj == NULL) {return NULL;}
+
+    stl_normalize(obj, 1.0);
+
+
+    //3 verticies per triangle.
+    float * vert_data = calloc(obj->tri_count * 3, VERTEX_SIZE);
+
+
+    float * curpos = vert_data;
+    for(int i = 0; i < obj->tri_count; i++) {
+        for (int j = 0; j < 3; j++) {
+
+            //copy the j'th vertex in the i'th triangle to curpos
+            memcpy(curpos, obj->tris[i].verts[j], sizeof(float) * 3);
+            curpos += 3;
+
+            memcpy(curpos, obj->tris[i].norm, sizeof(float) * 3);
+            curpos += 3;
+        }
+    }
+
+    Geometry * geom = geom_new(GL_STATIC_DRAW);
+
+    geom_replace_verticies(geom, vert_data, obj->tri_count * 3);
+
+    free(vert_data);
+
+    return geom;
+}
+
+void geom_draw(Geometry * geom) {
+    glEnable(GL_DEPTH_TEST);
+    geom_bind(geom);
+    glDrawArrays(GL_TRIANGLES, 0, geom->verticies_count);
+
+    geom_unbind();
+}
+
+void geom_draw_wireframe(Geometry * geom, float line_width) {
+    glEnable(GL_DEPTH_TEST);
+
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glLineWidth(line_width);
+    glEnable(GL_LINE_SMOOTH);
+
+    geom_bind(geom);
+    glDrawArrays(GL_TRIANGLES, 0, geom->verticies_count);
+
+    geom_unbind();
+    //probably dont need to do this, but I prefer to unbind things
+    glDisable(GL_LINE_SMOOTH);
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+}
+
+void geom_delete(Geometry * geom) {
+    geom_unbind();
+    free(geom->verticies);
+    glDeleteBuffers(1, &(geom->VBO));
+    glDeleteVertexArrays(1, &(geom->VAO));
+}
+
+
+
+
+
+
+
+//ToDo: Deprecating everything below this in favor of FullGeometry
+
+//each vertex consists of 6 floats. The first 3 for position, then next 3 for normal
+const int VERTEX_SIZE = 6 * sizeof(float);
+
+typedef struct {
+    VERTEX_BLUEPRINT * vert_blueprint;
+    int vertex_stride; //number of bytes one vertex takes up.
+
+    unsigned int VAO; //vertex array object
+    unsigned int VBO; //vertex buffer object
+
+    //ToDo: Fix typo (vertices not verticies)
+    //the number of verticies `verticies` can hold
+    int verticies_capacity;
+    int verticies_count;
+
+    float * verticies;
+
+
+    //what mode the vertex buffer associated with VBO is.
+    //eg, GL_STATIC_DRAW, GL_DYNAMIC_DRAW
+    GLenum usage;
+
 } Geometry;
+
 
 
 //usage denotes the hint to be given for how the vertex buffer object will
