@@ -39,39 +39,41 @@ typedef struct {
 //note that vertices and indices are passed by value. The resulting geometry will own
 //both vertices and indices. Note that they can be empty and updated later with a call
 //to geom_replace_vertices
-void full_geom_new(
-        FullGeometry* g, VERTEX_BLUEPRINT vertex_blueprint, int vertex_stride,
+FullGeometry full_geom_new(
+        VERTEX_BLUEPRINT vertex_blueprint, int vertex_stride,
         dynarr vertices, dynarr indices,
         GLenum primitive_type, GLenum usage
 ) {
-    g->vert_blueprint = vertex_blueprint;
-    g->vertex_stride = vertex_stride;
-    g->vertices = vertices;
-    g->indices = indices;
-    g->primitive_type = primitive_type;
-    g->usage = usage;
+    FullGeometry g;
+
+    g.vert_blueprint = vertex_blueprint;
+    g.vertex_stride = vertex_stride;
+    g.vertices = vertices;
+    g.indices = indices;
+    g.primitive_type = primitive_type;
+    g.usage = usage;
 
     //generate our opengl object
-    glGenVertexArrays(1, &(g->VAO));
-    glGenBuffers(1, &(g->VBO));
-    glGenBuffers(1, &(g->EBO));
+    glGenVertexArrays(1, &(g.VAO));
+    glGenBuffers(1, &(g.VBO));
+    glGenBuffers(1, &(g.EBO));
 
     //bind them
-    glBindVertexArray(g->VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, g->VBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g->EBO);
+    glBindVertexArray(g.VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, g.VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g.EBO);
 
 
-    if(g->vertices.len > 0) {
-        size_t len = g->vertices.len;
-        size_t stride = g->vertex_stride;
-        glBufferData(GL_ARRAY_BUFFER, len * stride, g->vertices.data, g->usage);
+    if(g.vertices.len > 0) {
+        size_t len = g.vertices.len;
+        size_t stride = g.vertex_stride;
+        glBufferData(GL_ARRAY_BUFFER, len * stride, g.vertices.data, g.usage);
     }
 
-    if(g->indices.len >0) {
-        size_t len = g->indices.len;
+    if(g.indices.len >0) {
+        size_t len = g.indices.len;
         size_t stride = sizeof(INDEX_TYPE);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, len * stride, g->indices.data, g->usage);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, len * stride, g.indices.data, g.usage);
     }
 
     vertex_blueprint();
@@ -80,6 +82,8 @@ void full_geom_new(
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    return g;
 }
 
 void full_geom_bind(FullGeometry * g) {
@@ -131,7 +135,7 @@ void full_geom_draw(FullGeometry * g) {
     full_geom_unbind();
 }
 
-void geom_draw_wireframe(FullGeometry * g, float line_width) {
+void full_geom_draw_wireframe(FullGeometry * g, float line_width) {
     glEnable(GL_DEPTH_TEST);
 
     glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
@@ -145,7 +149,7 @@ void geom_draw_wireframe(FullGeometry * g, float line_width) {
     glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
-void geom_delete(FullGeometry * g) {
+void full_geom_delete(FullGeometry * g) {
     full_geom_unbind();
     dynarr_delete(&g->vertices);
     dynarr_delete(&g->indices);

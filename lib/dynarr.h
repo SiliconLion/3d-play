@@ -140,12 +140,11 @@ void dynarr_delete(dynarr * self) {
 
 //maybe should write a test for this, but looking to switch to CAVE_VEC soon
 void dynarr_append_slice(dynarr * self, void* src, size_t element_count) {
-    if(self->capacity < self->len + element_count) {
-        //realloc
-        void* ret = realloc(self->data, (self->len + element_count));
-        if(!ret) {exit(-2);}
+//this is kinda bad, but more confident that it is correct, and seriously sweitching to CAVE_VEC soon
+    while(self->capacity < self->len + element_count) {
+        dynarr_expand(self);
     }
 
-    memcpy(((char*)self->data) + (self->len * self->stride), src, (element_count * self->stride));
+    memcpy((char*)self->data + (self->len * self->stride), src, (element_count * self->stride));
     self->len += element_count;
 }

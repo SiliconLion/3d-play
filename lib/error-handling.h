@@ -5,9 +5,9 @@
 #endif
 
 void print_gl_error(int line, char* file) {
-    int err = glGetError();
+    unsigned int err = glGetError();
     if(err != 0) {
-        printf("GL Error: %s:line %i : %i\n", line, file, err);
+        printf("GL Error: %s:line %i : %i\n", file, line,  err);
     }
 }
 

@@ -1,4 +1,4 @@
-CFLAGS := -g -O3 -std=c11
+CFLAGS := -g -std=c11 -O3
 WARNINGS := -Wall -Winline -Wno-deprecated
 INCLUDE := -Ilib -Iexternlibs
 LIBRARIES := -lm -lglfw -framework OpenGL

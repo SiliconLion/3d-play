@@ -49,7 +49,7 @@ typedef struct {
 typedef struct {
     float pos [3];
     float norm [3];
-    float tex [2;]
+    float tex [2];
 } ThreeNormTexPoint;
 
 typedef struct {
