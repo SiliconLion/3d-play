@@ -1,5 +1,9 @@
 #pragma once
 
+//Note: It is not valid for vertices to hold pointers to data outside the memory held by their
+//containing struct
+
+
 typedef struct {
     float pos [2];
 } TwoPoint;
