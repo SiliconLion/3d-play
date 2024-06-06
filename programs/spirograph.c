@@ -16,11 +16,19 @@
 #include "texture.h"
 
 
+//I know I know. Globals.
+//ToDo: Do this in a non-global variable way
+int SCREEN_WIDTH = 800;
+int SCREEN_HEIGHT = 600;
+
+
 //updates the glViewport when the window is resized.
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
-    printf("NEED TO UPDATE THE FRAMEBUFFER");
+    SCREEN_WIDTH = width;
+    SCREEN_HEIGHT = height;
+    printf("NEED TO UPDATE THE FRAMEBUFFER\n");
 } 
 
 
@@ -63,7 +71,7 @@ int main(int argc, char *argv[]) {
     //
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
-    GLFWwindow *window = glfwCreateWindow(800, 600, "3D Play :D", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "3D Play :D", NULL, NULL);
     if (window == NULL) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
@@ -83,37 +91,40 @@ int main(int argc, char *argv[]) {
 
     Framebuffer stylus_history;
     framebuffer_new(&stylus_history, GL_RGBA, 800, 600);
-//    Geometry * surface = prim_new_plane(2, 2, 1, 1, GL_STATIC_DRAW);
-//    FullGeometry surface = prim_new_text_rect(GL_STATIC_DRAW);
 //    Shader *stylus_shad = shad_new("shaders/spirograph/stylus.vert", "shaders/spirograph/stylus.frag");
     FullGeometry surface = prim_new_tex_rect(GL_STATIC_DRAW);
     Shader *screen_shad = shad_new("shaders/spirograph/screen.vert", "shaders/spirograph/screen.frag");
 
 
-//    int time_loc = glGetUniformLocation(stylus_shad->program, "aTime");
-//    int dim_loc = glGetUniformLocation(stylus_shad->program, "aDimensions");
-//    // int zoom_loc = glGetUniformLocation(shad->program, "aZoom");
-//    int stylus_loc = glGetUniformLocation(stylus_shad->program, "aStylus");
+    Texture * tex = tex_new("assets/matcap/check_reflection.png", true);
 
-//    int tex_loc = glGetUniformLocation(screen_shad->program, "screenTexture");
 
+    int screenDimsLoc = glGetUniformLocation(screen_shad->program, "screenDims");
 
     GLERROR();
 
-//    Texture * tex = tex_new("assets/matcap/check_reflection.png", true);
+
 
 
     //Clears the window
     glClearColor(0.0f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
-    shad_bind(screen_shad);
-//    tex_bind(tex, 0);
 
+    //Binds
+    shad_bind(screen_shad);
+    tex_bind(tex, 0);
+
+    //Set Uniforms
+    glUniform2f(screenDimsLoc, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT);
+
+    //Draw
     full_geom_draw(&surface);
 
     //Present to viewport
     glfwSwapBuffers(window);
+
+
 
     while(!glfwWindowShouldClose(window)) {
 //End of frame updates
