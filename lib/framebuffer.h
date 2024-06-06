@@ -96,27 +96,31 @@ void framebuffer_delete(Framebuffer* f) {
     glDeleteFramebuffers(1, &f->fbo_id);
 }
 
+
 void framebuffer_save_image(Framebuffer* f, const char* file_path) {
-    unsigned char *data;
-    data = calloc(f->width * f->height * 3, sizeof(unsigned char));
-    if(!data) { printf("Out of memory."); exit(-1);}
+
+//    std::unique_ptr<unsigned char[]> data = std::make_unique<unsigned char[]>(width * height * 3 * sizeof(unsigned int));
+// Or you can just:
+//    unsigned char *data = new unsigned_char[width * height * 3];
+    unsigned char *data = malloc(f->width * f->height * 4);
     glBindTexture(GL_TEXTURE_2D, f->tex_id);
 
-    //sets the pixel store mode
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-    GLERROR();
-
     stbi_flip_vertically_on_write(true);
-    int ret = stbi_write_png(file_path, f->width, f->height, 4, data, 4);
-    if (ret == 0)
-    {
+    int stride_of_pixel_row_in_bytes = 4 * f->width; // can you tell by the long name I missunderstood what this was supposed to be?
+    int ret = stbi_write_png(file_path, f->width, f->height, 4, data, stride_of_pixel_row_in_bytes);
+    if (ret == 0) {
         printf("Error: Cannot save image from framebuffer. (may be many possibilities but check filepath)\n");
     }
 
     free(data);
+
 }
+
+
+
 
 
 #endif

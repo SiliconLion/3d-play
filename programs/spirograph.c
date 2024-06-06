@@ -18,16 +18,16 @@
 
 //I know I know. Globals.
 //ToDo: Do this in a non-global variable way
-int SCREEN_WIDTH = 800;
-int SCREEN_HEIGHT = 600;
+//these are set via `glfwGetFramebufferSize`
+int WINDOW_WIDTH = 0;
+int WINDOW_HEIGHT = 0;
 
 
 //updates the glViewport when the window is resized.
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    glViewport(0, 0, width, height);
-    SCREEN_WIDTH = width;
-    SCREEN_HEIGHT = height;
+    glfwGetFramebufferSize(window, &WINDOW_WIDTH, &WINDOW_HEIGHT);
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     printf("NEED TO UPDATE THE FRAMEBUFFER\n");
 } 
 
@@ -71,14 +71,19 @@ int main(int argc, char *argv[]) {
     //
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
-    GLFWwindow *window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "3D Play :D", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(600, 800, "3D Play :D", NULL, NULL);
     if (window == NULL) {
         printf("Failed to create GLFW window\n");
         glfwTerminate();
         return -1;
     }
 
-    glViewport(0, 0, 800, 600);
+    //there's a bunch of reasons why the actual framebuffer created might be a different size than
+    //the numbers we pass to `glfwCreateWindow`. Including that screen coordinates and pixel counts
+    //are not always the same. (like on my macbook pro).
+    glfwGetFramebufferSize(window, &WINDOW_WIDTH, &WINDOW_HEIGHT);
+
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwMakeContextCurrent(window);
 
     // During init, enable debug output
@@ -90,8 +95,9 @@ int main(int argc, char *argv[]) {
 
 
     Framebuffer stylus_history;
-    framebuffer_new(&stylus_history, GL_RGBA, 800, 600);
-//    Shader *stylus_shad = shad_new("shaders/spirograph/stylus.vert", "shaders/spirograph/stylus.frag");
+    framebuffer_new(&stylus_history, GL_RGBA, WINDOW_WIDTH, WINDOW_HEIGHT);
+    Shader *stylus_shad = shad_new("shaders/spirograph/stylus.vert", "shaders/spirograph/stylus.frag");
+    //This geometry is used in multiple ways/places as it's just a textured rect with convenient coords
     FullGeometry surface = prim_new_tex_rect(GL_STATIC_DRAW);
     Shader *screen_shad = shad_new("shaders/spirograph/screen.vert", "shaders/spirograph/screen.frag");
 
@@ -106,19 +112,37 @@ int main(int argc, char *argv[]) {
 
 
 
-    //Clears the window
+    //Binds the stylus framebuffer
+    framebuffer_bind(&stylus_history);
+    shad_bind(stylus_shad);
+
+    //Clears the stylus framebuffer
+    glClearColor(0.3f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
+
+    //Sets the Stylus Uniforms
+    glBindTexture(GL_TEXTURE_2D, tex->id);
+
+    //Draws to the stylus framebuffer
+    full_geom_draw(&surface);
+
+    //Saves framebuffer to image
+    framebuffer_save_image(&stylus_history, "result.png");
+
+    //Binds Screen
+    framebuffer_unbind();
+    shad_bind(screen_shad);
+    glBindTexture(GL_TEXTURE_2D, stylus_history.tex_id);
+//    glBindTexture(GL_TEXTURE_2D, tex->id);
+
+    //Clears the screen
     glClearColor(0.0f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 
+    //Set Screen Uniforms
+    glUniform2f(screenDimsLoc, (float)WINDOW_WIDTH, (float)WINDOW_HEIGHT);
 
-    //Binds
-    shad_bind(screen_shad);
-    tex_bind(tex, 0);
-
-    //Set Uniforms
-    glUniform2f(screenDimsLoc, (float)SCREEN_WIDTH, (float)SCREEN_HEIGHT);
-
-    //Draw
+    //Draw Screen
     full_geom_draw(&surface);
 
     //Present to viewport

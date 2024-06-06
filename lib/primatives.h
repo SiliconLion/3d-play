@@ -40,6 +40,13 @@ FullGeometry prim_new_tex_rect(GLenum usage) {
             {{-1.0f, -1.0f}, {0.f, 0.f}}, {{1.0f, -1.0f}, {1.f, 0.f}}
     };
 
+//    //this is sometimes helpful for debugging
+//    for(int i = 0; i < 4; i++) {
+//        TwoTexPoint* vert = vertices_data + i;
+//        vert->pos[0] *= 0.9;
+//        vert->pos[1] *= 0.9;
+//    }
+
     INDEX_TYPE indices_data [6] = {
             1, 0, 2,
             1, 2, 3
