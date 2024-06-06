@@ -49,7 +49,7 @@ FullGeometry prim_new_tex_rect(GLenum usage) {
     dynarr_append_slice(&indices, indices_data, 6);
 
     FullGeometry g = full_geom_new(
-            TwoPointBlueprint, sizeof(TwoTexPoint), vertices, indices, GL_TRIANGLES, usage
+            TwoTexPointBlueprint, sizeof(TwoTexPoint), vertices, indices, GL_TRIANGLES, usage
     );
     return g;
     //no need to free vertices_data or indices_data because they are stack allocated.

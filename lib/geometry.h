@@ -129,6 +129,11 @@ void full_geom_replace_verts_and_indices(FullGeometry* g, dynarr new_verts, dyna
 
 
 void full_geom_draw(FullGeometry * g) {
+    //TODO: Handle this
+    if(g->indices.len == 0) {
+        printf("Cant draw geometry. No indices");
+    }
+
     glEnable(GL_DEPTH_TEST); //ToDo: Should this be here?
     full_geom_bind(g);
     glDrawElements(g->primitive_type, g->indices.len, GL_UNSIGNED_INT, (void*)0);

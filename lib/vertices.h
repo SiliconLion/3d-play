@@ -100,7 +100,7 @@ void vert_enable_two_tex_point() {
     glEnableVertexAttribArray(0);
 
     //set up the texture attributes
-    glVertexAttribPointer(0, 2,
+    glVertexAttribPointer(1, 2,
                           GL_FLOAT, GL_FALSE,
                           sizeof(TwoTexPoint), (void*)offsetof(TwoTexPoint , tex)
     );
@@ -116,7 +116,7 @@ void vert_enable_three_tex_point() {
     glEnableVertexAttribArray(0);
 
     //set up the texture attributes
-    glVertexAttribPointer(0, 2,
+    glVertexAttribPointer(1, 2,
                           GL_FLOAT, GL_FALSE,
                           sizeof(ThreeTexPoint), (void*)offsetof(ThreeTexPoint , tex)
     );
@@ -132,7 +132,7 @@ void vert_enable_four_tex_point() {
     glEnableVertexAttribArray(0);
 
     //set up the texture attributes
-    glVertexAttribPointer(0, 2,
+    glVertexAttribPointer(1, 2,
                           GL_FLOAT, GL_FALSE,
                           sizeof(FourTexPoint), (void*)offsetof(FourTexPoint , tex)
     );
@@ -153,7 +153,7 @@ void vert_enable_three_norm_point() {
     glEnableVertexAttribArray(0);
 
     //set up the norm attributes
-    glVertexAttribPointer(0, 3,
+    glVertexAttribPointer(1, 3,
                           GL_FLOAT, GL_FALSE,
                           sizeof(ThreeNormPoint), (void*)offsetof(ThreeNormPoint , norm)
     );
@@ -169,7 +169,7 @@ void vert_enable_four_norm_point() {
     glEnableVertexAttribArray(0);
 
     //set up the norm attributes
-    glVertexAttribPointer(0, 3,
+    glVertexAttribPointer(1, 3,
                           GL_FLOAT, GL_FALSE,
                           sizeof(FourNormPoint), (void*)offsetof(FourNormPoint , norm)
     );
@@ -190,14 +190,14 @@ void vert_enable_three_norm_tex_point() {
     glEnableVertexAttribArray(0);
 
     //set up the normal attribute
-    glVertexAttribPointer(0, 3,
+    glVertexAttribPointer(1, 3,
                           GL_FLOAT, GL_FALSE,
                           sizeof(ThreeNormTexPoint), (void*)offsetof(ThreeNormTexPoint , norm)
     );
     glEnableVertexAttribArray(1);
 
     //set up the texture-coord attribute
-    glVertexAttribPointer(0, 2,
+    glVertexAttribPointer(2, 2,
                           GL_FLOAT, GL_FALSE,
                           sizeof(ThreeNormTexPoint), (void*)offsetof(ThreeNormTexPoint , tex)
     );
@@ -214,14 +214,14 @@ void vert_enable_four_norm_tex_point() {
     glEnableVertexAttribArray(0);
 
     //set up the texture attributes
-    glVertexAttribPointer(0, 3,
+    glVertexAttribPointer(1, 3,
                           GL_FLOAT, GL_FALSE,
                           sizeof(ThreeNormTexPoint), (void*)offsetof(ThreeNormTexPoint , norm)
     );
     glEnableVertexAttribArray(1);
 
     //set up the texture-coord attribute
-    glVertexAttribPointer(0, 2,
+    glVertexAttribPointer(2, 2,
                           GL_FLOAT, GL_FALSE,
                           sizeof(ThreeNormTexPoint), (void*)offsetof(ThreeNormTexPoint , tex)
     );

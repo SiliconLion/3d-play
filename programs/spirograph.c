@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
 //    Geometry * surface = prim_new_plane(2, 2, 1, 1, GL_STATIC_DRAW);
 //    FullGeometry surface = prim_new_text_rect(GL_STATIC_DRAW);
 //    Shader *stylus_shad = shad_new("shaders/spirograph/stylus.vert", "shaders/spirograph/stylus.frag");
-    FullGeometry surface = prim_new_rect(GL_STATIC_DRAW);
+    FullGeometry surface = prim_new_tex_rect(GL_STATIC_DRAW);
     Shader *screen_shad = shad_new("shaders/spirograph/screen.vert", "shaders/spirograph/screen.frag");
 
 
