@@ -11,7 +11,7 @@ FullGeometry prim_new_rect(GLenum usage) {
 
     TwoPoint vertices_data [4] = {
             {-1.0f, 1.0f}, {1.0f, 1.0f},
-            {-1.0f, 1.0f}, {1.0f, -1.0f}
+            {-1.0f, -1.0f}, {1.0f, -1.0f}
     };
 
     INDEX_TYPE indices_data [6] = {

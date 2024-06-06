@@ -131,7 +131,7 @@ void full_geom_replace_verts_and_indices(FullGeometry* g, dynarr new_verts, dyna
 void full_geom_draw(FullGeometry * g) {
     glEnable(GL_DEPTH_TEST); //ToDo: Should this be here?
     full_geom_bind(g);
-    glDrawArrays(g->primitive_type, 0, g->vertices.len);
+    glDrawElements(g->primitive_type, g->indices.len, GL_UNSIGNED_INT, (void*)0);
     full_geom_unbind();
 }
 
