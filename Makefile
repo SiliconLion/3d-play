@@ -3,13 +3,13 @@ WARNINGS := -Wall -Winline -Wno-deprecated
 INCLUDE := -Ilib -Iexternlibs
 LIBRARIES := -lm -lglfw -framework OpenGL
 
-all: matcap spirograph waves transform tests
+all: matcap randomwalker waves transform tests
 
 matcap: programs/matcap.c
 	clang -o executeable/matcap programs/matcap.c \
 	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
-spirograph: programs/spirograph.c
-	clang -o executeable/spirograph programs/spirograph.c \
+randomwalker: programs/random-walker.c
+	clang -o executeable/randomwalker programs/random-walker.c \
 	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
 waves: programs/waves.c
 	clang -o executeable/waves programs/waves.c \
@@ -31,8 +31,8 @@ runwaves:
 	executeable/waves
 runtransform:
 	executeable/transform
-runspirograph:
-	executable/spirograph
+runrandomwalker:
+	executable/randomwalker
 
 runtests:
 	testing/tests
