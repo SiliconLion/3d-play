@@ -32,13 +32,13 @@ Shader * shad_new(const char * vert_path, const char * frag_path) {
     char infoLog[512];
 
     glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
-    if(!success) {
+    if(success == GL_FALSE) {
         glGetShaderInfoLog(vertShader, 512, NULL, infoLog);
         printf( "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog);
     }
 
-    glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
-    if(!success) {
+    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+    if(success == GL_FALSE) {
         glGetShaderInfoLog(fragShader, 512, NULL, infoLog);
         printf( "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", infoLog);
     }

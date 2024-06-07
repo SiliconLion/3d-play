@@ -16,6 +16,12 @@ typedef struct {
     size_t capacity;
 } dynarr;
 
+const dynarr DYNARR_ZERO = {.data = NULL, .stride = 0, .len = 0, .capacity = 0};
+
+bool dynarr_is_zero(dynarr * d) {
+    return d->data == NULL && d->stride == 0 && d->len == 0 && d->capacity == 0 ;
+}
+
 
 //stride is the size of the element to be stored in bytes
 //capacity is the number of elements to allocate for
@@ -85,8 +91,9 @@ void * dynarr_pop(dynarr * self) {
     return element;
 }
 
+//returns pointer to copy of element at index
 //bounds checked
-//frustratingly allocates
+//frustratingly allocates + copies.
 void * dynarr_get(dynarr * self, size_t index) {
     dynarr_check_index(self, index);
 
@@ -121,6 +128,7 @@ void dynarr_foreach(dynarr * self, void operation (void * element) ) {
 }
 
 //clears the data and resets the length to 0.
+//Properties like stride and capacity are preserved.
 void dynarr_clear(dynarr * arr) {
     memset(arr->data, 0, arr->stride * arr->len);
     arr->len = 0; 
@@ -128,4 +136,15 @@ void dynarr_clear(dynarr * arr) {
 
 void dynarr_delete(dynarr * self) {
     free(self->data);
+}
+
+//maybe should write a test for this, but looking to switch to CAVE_VEC soon
+void dynarr_append_slice(dynarr * self, void* src, size_t element_count) {
+//this is kinda bad, but more confident that it is correct, and seriously sweitching to CAVE_VEC soon
+    while(self->capacity < self->len + element_count) {
+        dynarr_expand(self);
+    }
+
+    memcpy((char*)self->data + (self->len * self->stride), src, (element_count * self->stride));
+    self->len += element_count;
 }

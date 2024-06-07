@@ -7,24 +7,194 @@
 
 #include <stdlib.h>
 #include "stlreader.h"
+#include "dynarr.h" //switch to CAVE_Vec when possible
+#include "vertices.h"
 
-//each vertex consists of 6 floats. The first 3 for position, then next 3 for normal
-const int VERTEX_SIZE = 6 * sizeof(float); 
+
+#define INDEX_TYPE unsigned int
 
 typedef struct {
-    unsigned int VAO;
-    unsigned int VBO;
-    // unsigned int EBO;
-    
-    //the number of verticies `verticies` can hold
-    int verticies_capacity;
-    int verticies_count;
-    float * verticies;
+    VERTEX_BLUEPRINT * vert_blueprint;
+    size_t vertex_stride; //number of bytes one vertex takes up.
+
+    unsigned int VAO; //vertex array object
+    unsigned int VBO; //vertex buffer object
+    unsigned int EBO; //element buffer object (indices basically)
+
+    dynarr vertices;
+    dynarr indices;
+
+    //what type of primitive is created by the vertices + indices. Eg,
+    //GL_TRIANGLES, GL_TRIANGLE_FAN, GL_LINE_STRIP, etc
+    GLenum primitive_type;
+
     //what mode the vertex buffer associated with VBO is. 
     //eg, GL_STATIC_DRAW, GL_DYNAMIC_DRAW
     GLenum usage;
 
+} FullGeometry;
+//ToDo: Once everything is switched over to this, rename to just `Geometry`.
+
+
+//note that vertices and indices are passed by value. The resulting geometry will own
+//both vertices and indices. Note that they can be empty and updated later with a call
+//to geom_replace_vertices
+FullGeometry full_geom_new(
+        VERTEX_BLUEPRINT vertex_blueprint, int vertex_stride,
+        dynarr vertices, dynarr indices,
+        GLenum primitive_type, GLenum usage
+) {
+    FullGeometry g;
+
+    g.vert_blueprint = vertex_blueprint;
+    g.vertex_stride = vertex_stride;
+    g.vertices = vertices;
+    g.indices = indices;
+    g.primitive_type = primitive_type;
+    g.usage = usage;
+
+    //generate our opengl object
+    glGenVertexArrays(1, &(g.VAO));
+    glGenBuffers(1, &(g.VBO));
+    glGenBuffers(1, &(g.EBO));
+
+    //bind them
+    glBindVertexArray(g.VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, g.VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g.EBO);
+
+
+    if(g.vertices.len > 0) {
+        size_t len = g.vertices.len;
+        size_t stride = g.vertex_stride;
+        glBufferData(GL_ARRAY_BUFFER, len * stride, g.vertices.data, g.usage);
+    }
+
+    if(g.indices.len >0) {
+        size_t len = g.indices.len;
+        size_t stride = sizeof(INDEX_TYPE);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, len * stride, g.indices.data, g.usage);
+    }
+
+    vertex_blueprint();
+
+    //unbind
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    return g;
+}
+
+void full_geom_bind(FullGeometry * g) {
+    glBindVertexArray(g->VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, g->VBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g->EBO);
+}
+
+void full_geom_unbind() {
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+//Clears and then reuploads
+//note, takes ownership of new_verts and new_indices. Either can be empty, but why have a geometry
+//with no vertices?
+void full_geom_replace_verts_and_indices(FullGeometry* g, dynarr new_verts, dynarr new_indices) {
+    //replace vertices and indices
+    dynarr_delete(&g->vertices);
+    dynarr_delete(&g->indices);
+    g->vertices = new_verts;
+    g->indices = new_indices;
+
+//update the gpu with our new vertices
+    full_geom_bind(g);
+
+    //update vertices on gpu
+    size_t len = g->vertices.len;
+    size_t stride = g->vertex_stride;
+    glBufferData(GL_ARRAY_BUFFER, len * stride, g->vertices.data, g->usage);
+
+    //update indices on gpu
+    len = g->indices.len;
+    stride = sizeof(INDEX_TYPE);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, len * stride, g->indices.data, g->usage);
+
+    full_geom_unbind();
+}
+
+
+//creates a Geometry from an stl file.
+
+
+void full_geom_draw(FullGeometry * g) {
+    //TODO: Handle this
+    if(g->indices.len == 0) {
+        printf("Cant draw geometry. No indices");
+    }
+
+    glEnable(GL_DEPTH_TEST); //ToDo: Should this be here?
+    full_geom_bind(g);
+    glDrawElements(g->primitive_type, g->indices.len, GL_UNSIGNED_INT, (void*)0);
+    full_geom_unbind();
+}
+
+void full_geom_draw_wireframe(FullGeometry * g, float line_width) {
+    glEnable(GL_DEPTH_TEST);
+
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glLineWidth(line_width);
+    glEnable(GL_LINE_SMOOTH);
+
+    full_geom_draw(g);
+
+    //probably dont need to do this, but I prefer to unbind things
+    glDisable(GL_LINE_SMOOTH);
+    glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+}
+
+void full_geom_delete(FullGeometry * g) {
+    full_geom_unbind();
+    dynarr_delete(&g->vertices);
+    dynarr_delete(&g->indices);
+    glDeleteVertexArrays(1, &g->VAO);
+    glDeleteBuffers(1, &g->VBO);
+    glDeleteBuffers(1, &g->EBO);
+}
+
+
+
+
+
+
+
+//ToDo: Deprecating everything below this in favor of FullGeometry
+
+//each vertex consists of 6 floats. The first 3 for position, then next 3 for normal
+const int VERTEX_SIZE = 6 * sizeof(float);
+
+typedef struct {
+    VERTEX_BLUEPRINT * vert_blueprint;
+    int vertex_stride; //number of bytes one vertex takes up.
+
+    unsigned int VAO; //vertex array object
+    unsigned int VBO; //vertex buffer object
+
+    //ToDo: Fix typo (vertices not verticies)
+    //the number of verticies `verticies` can hold
+    int verticies_capacity;
+    int verticies_count;
+
+    float * verticies;
+
+
+    //what mode the vertex buffer associated with VBO is.
+    //eg, GL_STATIC_DRAW, GL_DYNAMIC_DRAW
+    GLenum usage;
+
 } Geometry;
+
 
 
 //usage denotes the hint to be given for how the vertex buffer object will
