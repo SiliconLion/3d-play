@@ -9,9 +9,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#ifndef STB_IMAGE_IMPLEMENTATION
-    #define STB_IMAGE_IMPLEMENTATION
-#endif
+#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "utilities.h"
 

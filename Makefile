@@ -1,29 +1,14 @@
-CFLAGS := -g -std=c11 -O3
-WARNINGS := -Wall -Winline -Wno-deprecated
-INCLUDE := -Ilib -Iexternlibs
-LIBRARIES := -lm -lglfw -framework OpenGL
 
-all: matcap randomwalker waves transform tests
+WARNINGS := -Wall -Winline -Wno-deprecated
 
 matcap: programs/matcap.c
-	clang -o executeable/matcap programs/matcap.c \
-	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
-randomwalker: programs/random-walker.c
-	clang -o executeable/randomwalker programs/random-walker.c \
-	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
+	clang -o executeable/matcap programs/matcap.c -std=c11 -Ilib -Iexternlibs -lglfw -framework OpenGL $(WARNINGS) -O3
 waves: programs/waves.c
-	clang -o executeable/waves programs/waves.c \
-	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
-transform: programs/transform.c
-	clang -o executeable/transform programs/transform.c \
-	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
+	clang -o executeable/waves programs/waves.c -std=c11 -Ilib -Iexternlibs -lglfw -framework OpenGL $(WARNINGS) -O3
+transform:
+	clang -o executeable/transform programs/transform.c -std=c11 -Ilib -Iexternlibs -lglfw -framework OpenGL $(WARNINGS) -O3 
 tests: testing/tests.c
-	clang -o testing/tests testing/tests.c \
-	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
-
-clean:
-	rm -rf executeable/*
-	echo clean done
+	clang -o testing/tests testing/tests.c -std=c11 -Ilib -Iexternlibs -Itesting $(WARNINGS) -O3
 
 runmatcap:
 	executeable/matcap
@@ -31,8 +16,5 @@ runwaves:
 	executeable/waves
 runtransform:
 	executeable/transform
-runrandomwalker:
-	executable/randomwalker
-
 runtests:
 	testing/tests

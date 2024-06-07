@@ -88,5 +88,3 @@ bool writeBytes(const char* path, int8_t * bytes, int count) {
 inline unsigned int util_flatten_index(int row, int col, int width) {
     return row * width + col;
 }
-
-inline float norm_rand() { return (float)rand() / (float)RAND_MAX;}
