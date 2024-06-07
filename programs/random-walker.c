@@ -83,7 +83,6 @@ int main(int argc, char *argv[]) {
 
     int screenDimsLoc = glGetUniformLocation(screen_shad->program, "screenDims");
     int stylusPosLoc = glGetUniformLocation(stylus_shad->program, "stylusPos");
-    int stylusHistoryLoc = glGetUniformLocation(stylus_shad->program, "stylusHistory");
     int frameColorLoc = glGetUniformLocation(stylus_shad->program, "framecolor");
     int kernelLoc = glGetUniformLocation(effect_shad->program, "kernel");
     int offsetLoc = glGetUniformLocation(effect_shad->program, "offset");
@@ -128,9 +127,6 @@ int main(int argc, char *argv[]) {
 //Main Loop
     while(!glfwWindowShouldClose(window)) {
 //Start of frame logic
-        if(FRAMEBUFFER_RESIZED) {
-
-        }
 
         bool saveFrame = false;
 
