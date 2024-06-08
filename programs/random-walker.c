@@ -97,9 +97,13 @@ int main(int argc, char *argv[]) {
     effect_kernels[0] = IDENTITY_KERNEL;
     effect_kernels[1] = BLUR_KERNEL;
     effect_kernels[2] = SHARPEN_KERNEL;
-    effect_kernels[3] = rand_kernel_effect_param();
-    effect_kernels[4] = rand_kernel_effect_param();
-    effect_kernels[5] = rand_kernel_effect_param();
+//    effect_kernels[0] = rand_kernel_effect_param();
+//    effect_kernels[0] = WEIRD_KERNEL;
+//    effect_kernels[1] = rand_kernel_effect_param_v2();
+//    effect_kernels[2] = rand_kernel_effect_param_v2();
+    effect_kernels[3] = rand_kernel_effect_param_v2();
+    effect_kernels[4] = rand_kernel_effect_param_v2();
+    effect_kernels[5] = rand_kernel_effect_param_v2();
 
     int curr_effect_idx = 0;
 
