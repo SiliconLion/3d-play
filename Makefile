@@ -20,6 +20,10 @@ transform: programs/transform.c
 tests: testing/tests.c
 	clang -o testing/tests testing/tests.c \
 	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
+spirograph: programs/spirograph.c
+	clang -o executeable/spirograph programs/spirograph.c \
+	$(INCLUDE) $(LIBRARIES) $(WARNINGS) $(CFLAGS)
+
 
 clean:
 	rm -rf executeable/*
@@ -33,6 +37,8 @@ runtransform:
 	executeable/transform
 runrandomwalker:
 	executable/randomwalker
+runspirograph:
+	executeable/spirograph
 
 runtests:
 	testing/tests
