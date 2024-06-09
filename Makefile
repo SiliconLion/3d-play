@@ -8,7 +8,7 @@ waves: programs/waves.c
 transform:
 	clang -o executeable/transform programs/transform.c -std=c11 -Ilib -Iexternlibs -lglfw -framework OpenGL $(WARNINGS) -O3 
 tests: testing/tests.c
-	clang -o testing/tests testing/tests.c -std=c11 -Ilib -Iexternlibs -Itesting $(WARNINGS) -O3
+	clang -o executeable/tests testing/tests.c -std=c11 -Ilib -Iexternlibs -Itesting $(WARNINGS) -O3
 
 runmatcap:
 	executeable/matcap
