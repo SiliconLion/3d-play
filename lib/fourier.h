@@ -71,8 +71,8 @@ void wander_init(Wanderer* w) {
     float radius = norm_rand() * (radius_max - radius_min) + radius_min; 
 
     w->m = (MetaBall){.x = 0, .y = 0, .radius = radius};
-    w->delta_x = fin_fourier_new_rand(1, 0.3, 3.0, 0.1);
-    w->delta_y = fin_fourier_new_rand(1, 0.3, 3.0, 0.1);
+    w->delta_x = fin_fourier_new_rand(3, 0.3, 10.0, 1.0);
+    w->delta_y = fin_fourier_new_rand(3, 0.3, 10.0, 1.0);
     w->time = 0;
 }
 
